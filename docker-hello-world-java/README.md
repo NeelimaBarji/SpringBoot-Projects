@@ -1,7 +1,12 @@
 # Dockerfile Examples
 
 ## Docker commands
-- docker build -t in28min/hello-world-docker:v1 .
+- docker build -t <imagename>:<tag> .
+- docker run -d -p <hostport>:<containerport> <imagename>:<tagname>
+- docker container ls
+- docker image ls
+- docker container stop <container_id>
+  
 
 
 ## Dockerfile - 1 - Creating Docker Images
