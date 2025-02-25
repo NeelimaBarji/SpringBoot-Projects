@@ -1,11 +1,11 @@
 # Dockerfile Examples
 
 ## Docker commands
-- docker build -t <imagename>:<tag> .
-- docker run -d -p <hostport>:<containerport> <imagename>:<tagname>
+- docker build -t imagename:tag .
+- docker run -d -p hostport:containerport imagename:tagname
 - docker container ls
 - docker image ls
-- docker container stop <container_id>
+- docker container stop container_id
   
 
 
