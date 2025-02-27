@@ -1,0 +1,40 @@
+Create docker image for Currency-exchange service:
+
+Process: just add spring boot maven plugin, provide image name under configuration as below 
+
+  <plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+				<image>
+				<name>neelimabarji/mmv2-${project.artifactId}:${project.version}</name>
+				</image>
+				<pullPolicy>IF_NOT_PRESENT</pullPolicy>	
+				</configuration>
+			</plugin>
+
+Do maven build : spring-boot:build-image -DskipTests
+
+(don’t do -DskipTests in real project)
+
+
+DOCKER COMPOSE:
+
+Launching container for each microservices image isnt easy thing, so docker compose is into picture. Docker compose is a tool defining and running multicontainer docker application. Have to write yml file
+
+Docker-compose.yml
+
+
+services:
+
+currency-exchange:
+image: neelimabarji/mmv3-currency-exchange-service:0.0.1-SNAPSHOT
+mem_limit: 700m
+ports:
+- "8000:8000"
+
+
+
+Open terminal at file location
+
+Run : docker-compose up
