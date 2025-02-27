@@ -1,0 +1,59 @@
+	ZIPKIN:
+	Ø Zipkin is a tool that helps you visualize and analyze how requests move through your application. It's used to troubleshoot performance issues and identify bottlenecks
+	Ø Zipkin. Zipkin is a distributed tracing system. It helps gather timing data needed to troubleshoot latency problems in service architectures
+
+Launching ZIpKIN in Docker:
+Run below command in terminal ( ensure docker is installed and its running)
+
+Docker run -p 9411:9411 openzipkin/zipkin:2.23
+
+Connecting Microservice with Zipkin:
+Have to configure zipkin relevent dependencies in microservice, this configuration varies based on spring boot version
+
+https://github.com/in28minutes/spring-microservices-v3/blob/main/v3-upgrade.md
+
+
+<!--Micrometer - Vendor-neutral application observability facade.     Instrument your JVM-based application code without vendor lock-in.      Observation (Metrics & Logs) + Tracing.--><dependency>
+    <groupId>io.micrometer</groupId>
+    <artifactId>micrometer-observation</artifactId>
+</dependency>
+<!--OPTION 1: Open Telemetry as Bridge (RECOMMENDED) --><!--Open Telemetry     - Simplified Observability (metrics, logs, and traces) --><dependency>
+    <groupId>io.micrometer</groupId>
+    <artifactId>micrometer-tracing-bridge-otel</artifactId>
+</dependency>
+<dependency>
+    <groupId>io.opentelemetry</groupId>
+    <artifactId>opentelemetry-exporter-zipkin</artifactId>
+</dependency>
+
+
+
+After that have to configure sampling ( how much percent requests needs to sample)
+
+management.tracing.sampling.probability=1.0 #SB3logging.pattern.level=%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}] #SB3
+
+
+that 
+APIGateway > Currencycpnversion > currencyexchange
+
+If you want to trace the record to currency exchange via currency conversion (used feign to call the currencyexchange MS).  Have to add additional dependency
+
+<!--COMMON CHANGES + --><!--Enables tracing of REST API calls made using Feign - V3 ONLY--><dependency>
+	<groupId>io.github.openfeign</groupId>
+	<artifactId>feign-micrometer</artifactId>
+</dependency>
+
+
+Copy the above depency in currency conversion
+
+Best Practice:
+Micrometer cant trace microservice called with RestTemplate., Create RestTemplate using RestTemplateBuilder
+
+
+@Configuration(proxyBeanMethods= false)
+classRestTemplateConfiguration{
+    
+    @BeanRestTemplaterestTemplate(RestTemplateBuilderbuilder) {
+        returnbuilder.build();
+    }
+}
