@@ -1,4 +1,4 @@
-# Details of code
+# Details of Microservice
 
 Have created two microservices:
   ### 1. CurrencyExchange: 
@@ -8,7 +8,8 @@ converts the given currency for specified quantity. (http://localhost:8100/curre
 http://localhost:8100/currency-conversion-feign/from/USD/to/INR/quantity/10).
 
 Currency-conversion called currency-exchange microservice to get exchange rate, using 
-  > RestTemplateBuilder (Micrometer which traces the request from zipkin, unable to trace request if RestTemplate is used. So best practice is to use RestTemplateBuilder)
+  > RestTemplateBuilder (Micrometer which traces the request from zipkin, unable to trace request if RestTemplate is used. 
+So best practice is to use RestTemplateBuilder)
   > feign (to enable request tracing for feign called microservices, have to use below dependency)
            
            ```
@@ -18,4 +19,72 @@ Currency-conversion called currency-exchange microservice to get exchange rate, 
 	          <artifactId>feign-micrometer</artifactId>
           </dependency>
           ```
- ## Process of creating docker image for microservices
+
+Naming server:
+In microservices architecture, a "naming server" refers to a dedicated server that acts as a central registry, storing information 
+about all available microservices within a system, including their network addresses and health status, allowing other microservices t
+o discover and communicate with each other dynamically Example: Eureka
+
+@EnableEurekaServer - annotation is used on top of main class
+below dependency is required for creating eureka naming server
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+		</dependency>
+
+
+For connecting other microservices to naming server, use below dependecy and provide eureka server url in application.proerties
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+		</dependency>
+
+eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka
+
+eureka.client.serviceUrl.defaultZone=http://naming-server:8761/eureka (if naming server runs as docker container)
+
+
+APIGateway:
+1. For creating APIGateway, add below dependency
+
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-gateway</artifactId>
+		</dependency>
+
+2. application.properties file:
+spring.cloud.gateway.discovery.locator.enabled=true
+spring.cloud.gateway.discovery.locator.lowerCaseServiceId=true
+
+
+3. create config class for redirecting url
+@Configuration
+public class ApiGatewayConfiguration {
+	
+	@Bean
+	public RouteLocator gatewayRouter(RouteLocatorBuilder builder) {
+		
+		
+		
+		return builder.routes()
+				.route(p -> p.path("/get")
+						.filters(f -> f
+								.addRequestHeader("MyHeader", "MyURI")
+								.addRequestHeader("Param", "MyValue"))
+						.uri("http://httpbin.org:80"))
+				.route(p -> p.path("/currency-exchange/**")
+						.uri("lb://currency-exchange"))
+				.route(p -> p.path("/currency-conversion/**")
+						.uri("lb://currency-conversion"))
+				.route(p -> p.path("/currency-conversion-feign/**")
+						.uri("lb://currency-conversion"))
+				.route(p -> p.path("/currency-conversion-new/**")
+						.filters(f -> f.rewritePath(
+								"/currency-conversion-new/(?<segment>.*)", 
+								"/currency-conversion-feign/${segment}"))
+						.uri("lb://currency-conversion"))
+				.build();
+	}
+
+}
+
