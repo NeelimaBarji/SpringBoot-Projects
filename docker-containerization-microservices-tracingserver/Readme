@@ -1,0 +1,21 @@
+# Details of code
+
+Have created two microservices:
+  ### 1. CurrencyExchange: 
+  gives exchange rate (http://localhost:8000/currency-exchange/from/USD/to/INR)
+  ### 2. CurrencyConversion: 
+converts the given currency for specified quantity. (http://localhost:8100/currency-conversion/from/USD/to/INR/quantity/10
+http://localhost:8100/currency-conversion-feign/from/USD/to/INR/quantity/10).
+
+Currency-conversion called currency-exchange microservice to get exchange rate, using 
+  > RestTemplateBuilder (Micrometer which traces the request from zipkin, unable to trace request if RestTemplate is used. So best practice is to use RestTemplateBuilder)
+  > feign (to enable request tracing for feign called microservices, have to use below dependency)
+           
+           ```
+           <!--COMMON CHANGES + --><!--Enables tracing of REST API calls made using Feign - V3 ONLY-->
+           <dependency>
+	          <groupId>io.github.openfeign</groupId>
+	          <artifactId>feign-micrometer</artifactId>
+          </dependency>
+          ```
+ ## Process of creating docker image for microservices
